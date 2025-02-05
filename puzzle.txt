@@ -1,7 +1,17 @@
-It is a little known fact, for the purposes of this puzzler, that potatoes are 99% water and only 1% potato. Or 1% dry matter, the stuff that makes a potato a potato. 
+You are given three little felt drawstring bags. In each of these bags, you have 10 marbles. 10 marbles total, in each bag. 
 
-So, imagine you were to take 100 pounds of potatoes and you set them out on your back porch to dry out. You leave them out in the sun. When you do this, they will start to dry out. 
+One bag is filled with 10 black marbles. 
 
-As they dry out, of course the water begins to evaporate. And after a while enough water has evaporated so that the potatoes are now 98% water.
+One bag is filled with 10 white marbles.
 
-If you were to weigh those potatoes at that moment, when they are 98% water, how much lighter would they be?
+And the last bag is filled with half and half, 5 black and 5 white. 
+
+Each bag has a little label on it. However, the labels are all incorrect.
+
+So, you are allowed to reach your hand into a bag, but you are not allowed to look at the colors of the marbles in the bags. You are allowed to reach in and remove one marble from a bag, and then you can look at that marble. But then you have to return that marble back to its bag without looking at the rest of them. You can only have one marble out of a bag at a time. So, you take one out, look at it, then return it. You are then allowed to pull a marble from another bag, look at it, and then return it. And so on and so on. 
+
+So, here is the question. 
+
+How many times do you have to do this to identify each bag? In other words, how many peeks do you get of one marble from one bag at a time, before you can clearly identify which bag is the all black bag, which is the all white and which is the mixed bag?
+
+(Credit to Car Talk)
