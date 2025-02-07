@@ -1,9 +1,9 @@
 /** Let's try a different motivation for variance, which is, simply, making the
   * compiler happy.
   *
-  * By default, the compiler assumes that higher-kinded types (i.e., generic
-  * types) are *invariant,* i.e., that A <= B (we use <= to mean "is a subtype
-  * of") does not imply that T[A] <= T[B] for some T.
+  * By default, the compiler assumes that generic types are *invariant,* i.e.,
+  * that A <= B (we use <= to mean "is a subtype of") does not imply that T[A]
+  * <= T[B] for some T.
   *
   * This gets us into trouble when we're trying to compile common types.
   *
