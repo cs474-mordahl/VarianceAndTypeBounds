@@ -1,3 +1,9 @@
+// We're going to be using animals a lot in this worksheet:
+sealed trait Animal:
+  def name: String
+case class Dog(name: String) extends Animal
+case class Cat(name: String) extends Animal
+
 /** In the variance worksheet, we talked about contravariance and covariance,
   * and when each is appropriate.
   *
@@ -10,7 +16,6 @@
   */
 
 // format: off
-
 /*
 sealed trait BrokenList[+T]
   def prepend(elem: T): BrokenNonEmptyList[T] = BrokenNonEmptyList(elem, this)
@@ -24,12 +29,21 @@ case object BrokenNil extends BrokenList[Nothing]
   * Remember, functions are contravariant in their input and covariant in their
   * output.
   *
-  * We can clearly see a situation where, if the compiler allowed us to use this
-  * code, we would run into trouble.
+  * It's not quite clear in this example why this could be a problem, but I
+  * encourage you to stop and think about how, if we created a mutable,
+  * covariant collection, what kinds of problems we could run into if the
+  * compiler did not complain about this.
+  *
+  * Here's a hint, consider the following line of code (it doesn't compile but
+  * assume it does)
+  */
+
+// case class MutableBox[+T](var inside: T)
+
+/** Now, what kind of shenanigans could we get into here?
   *
   * I encourage you to stop here before loooking at the code ahead, and think
-  * about it for a minute. What bad things could we do if the compiler admitted
-  * the code above?
+  * about it for a minute.
   *
   * If you can't find a solution, scroll down and see what I came up with.
   *
@@ -39,25 +53,43 @@ case object BrokenNil extends BrokenList[Nothing]
   * would run into trouble.
   */
 
-// We make a list of animals
-/* val animalList: BrokenList[Animal] =
- * BrokenNonEmptyList[Cat](Cat(), BrokenNonEmptyList[Cat](Cat(), BrokenNil))
- * animalList.getClass() */
 // format: off
 /*
-val bl: BrokenNonEmptyList[Animal] = BrokenNonEmptyList[Cat](Cat(), BrokenNil)
-val cl = bl.prepend(Dog()) // This works, even though we're now putting a dog into a list of cats!
+val dogBox: MutableBox[Dog] = MutableBox[Dog](Dog("Fido"))
+val animalBox: MutableBox[Animal] = dogBox // Legal because MutableBox[Dog] <= MutableBox[Animal]
+animalBox.inside = Cat("Ace") // now dogBox, of type MutableBox[Dog], has a cat inside it!
+*/
+// format: on
+
+/** This is actually a real problem with Java arrays, which are mutable and
+  * covariant!
+  *
+  * Check out Arrays.java to see an example of the Java compiler allowing
+  * unsound code (note that you can't reproduce this in Scala, because Scala
+  * arrays are declared as invariant).
+  */
+
+/** Here's an example of how we can get in trouble even with immutable
+  * collections (the code won't compile, so I commented it out)
+  */
+
+// format: off
+/*
+sealed trait BrokenList[+T]:
+  def prepend(elem: T): BrokenNonEmptyList[T] = BrokenNonEmptyList(elem, this)
+case class BrokenNonEmptyList[+T](head: T, tail: BrokenList[T]) extends BrokenList[T]
+case object BrokenNil extends BrokenList[Nothing]
+
+// We make a list of Cats
+val catList: BrokenList[Cat] = BrokenNonEmptyList[Cat](Cat("Ace"), BrokenNil)
+val animalList: BrokenList[Animal] = catList // Legal because of Liskov
+animalList.prepend(Dog("Fido")) // Now we have a Dog in a Cat list!
 */
 // format: on
 
 /** So, how do we fix this? The solution is to flip the variance of T. We do
   * this by introducing a new type, U, that has T as its subtype.
   */
-
-sealed trait Animal:
-  def name: String
-case class Dog(name: String) extends Animal
-case class Cat(name: String) extends Animal
 
 sealed trait MyList[+T]:
   def prepend[U >: T](elem: U): MyNonEmptyList[U] =
@@ -66,12 +98,41 @@ end MyList
 case class MyNonEmptyList[+T](head: T, tail: MyList[T]) extends MyList[T]
 case object Nil                                         extends MyList[Nothing]
 
-val cl1: MyList[Cat]    = MyNonEmptyList[Cat](Cat("Ace"), Nil)
+// Create a list of cats
+val cl1: MyList[Cat] = MyNonEmptyList[Cat](Cat("Ace"), Nil)
+// Valid because of Liskov
 val al1: MyList[Animal] = cl1
-cl1.prepend(Dog("Fido"))
+/* The compiler won't allow this next line, because it's expecting something
+ * that is >= Animal */
+// al1.prepend[Dog](Dog("Fido"))
+/* However, we can do the following, which is safe because the return value is a
+ * List of Animals, and cl1 is not actually modified. */
+al1.prepend[Animal](Dog("Fido"))
 
-/** In this case, T is called a "lower type bound", because it specifies the
-  * lowest type that U can be.
+/** If we try to define a mutable list, Scala won't let us make it covariant. */
+// format: off
+/*
+sealed trait MutableList[+T]
+/* Scala won't let us compile the following: */
+case class NonEmptyMutableList[+T](var head: T, var tail: MutableList[T])
+*/
+// format: on
+
+/** The only way we can create a mutable, generic collection is by making it
+  * invariant.
+  */
+sealed trait MutableList[T]
+case class NonEmptyMutableList[T](var head: T, var tail: MutableList[T])
+    extends MutableList[T]
+// Note that we can't make this MutableList[Nothing], because it's no longer covariant.
+case class EmptyMutableList[T]() extends MutableList[T]
+
+var ml1 = NonEmptyMutableList[Cat](Cat("Ace"), EmptyMutableList[Cat]())
+/* And now this assignment won't work: */
+// var ml2: MutableList[Animal] = ml1
+
+/** In the case of MyList.prepend, T is called a "lower type bound", because it
+  * specifies the lowest type that U can be.
   *
   * Of course, we can specify upper type bounds, too. Upper type bounds are more
   * common, and are usually used to specify certain traits that a type must
@@ -107,4 +168,5 @@ case object EmptyArray extends ObjectArray
 /** Now, it's easy for us to make an array that has a smorgasbord of different
   * objects.
   */
-val x: ObjectArray = "String" :: Integer(1) :: Double.box(1.34) :: EmptyArray
+val x: ObjectArray =
+  "String" :: Integer.valueOf(1) :: Double.box(1.34) :: EmptyArray
