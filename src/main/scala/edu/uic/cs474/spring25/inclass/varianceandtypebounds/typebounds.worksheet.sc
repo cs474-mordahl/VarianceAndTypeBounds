@@ -10,8 +10,9 @@
   */
 
 // format: off
+
 /*
-trait BrokenList[+T]:
+sealed trait BrokenList[+T]
   def prepend(elem: T): BrokenNonEmptyList[T] = BrokenNonEmptyList(elem, this)
 case class BrokenNonEmptyList[+T](head: T, tail: BrokenList[T]) extends BrokenList[T]
 case object BrokenNil extends BrokenList[Nothing]
@@ -20,21 +21,53 @@ case object BrokenNil extends BrokenList[Nothing]
 
 /** If you uncomment the previous code, you'll see that the compiler complains
   * that we try to use an covariant parameter (T) in a contravariant position.
-  * Remmeber, functions are contravariant in their input and covariant in their
+  * Remember, functions are contravariant in their input and covariant in their
   * output.
   *
   * We can clearly see a situation where, if the compiler allowed us to use this
   * code, we would run into trouble.
   *
-  * So, how do we fix this? The solution is to flip the variance of T. We do
+  * I encourage you to stop here before loooking at the code ahead, and think
+  * about it for a minute. What bad things could we do if the compiler admitted
+  * the code above?
+  *
+  * If you can't find a solution, scroll down and see what I came up with.
+  *
+  * Last chance!
+  *
+  * Here's my example of how, if the compiler did not throw these errors, we
+  * would run into trouble.
+  */
+
+// We make a list of animals
+/* val animalList: BrokenList[Animal] =
+ * BrokenNonEmptyList[Cat](Cat(), BrokenNonEmptyList[Cat](Cat(), BrokenNil))
+ * animalList.getClass() */
+// format: off
+/*
+val bl: BrokenNonEmptyList[Animal] = BrokenNonEmptyList[Cat](Cat(), BrokenNil)
+val cl = bl.prepend(Dog()) // This works, even though we're now putting a dog into a list of cats!
+*/
+// format: on
+
+/** So, how do we fix this? The solution is to flip the variance of T. We do
   * this by introducing a new type, U, that has T as its subtype.
   */
 
-trait MyList[+T]:
+sealed trait Animal:
+  def name: String
+case class Dog(name: String) extends Animal
+case class Cat(name: String) extends Animal
+
+sealed trait MyList[+T]:
   def prepend[U >: T](elem: U): MyNonEmptyList[U] = MyNonEmptyList(elem, this)
-  //          ^^^^^^ this constrains U to supertypes of T
+end MyList
 case class MyNonEmptyList[+T](head: T, tail: MyList[T]) extends MyList[T]
 case object Nil                                         extends MyList[Nothing]
+
+val cl1: MyList[Cat]    = MyNonEmptyList[Cat](Cat("Ace"), Nil)
+val al1: MyList[Animal] = cl1
+al1.prepend(Dog("Fido"))
 
 /** In this case, T is called a "lower type bound", because it specifies the
   * lowest type that U can be.
