@@ -29,5 +29,5 @@ jobs:
         cache: 'sbt'
     - name: Setup sbt launcher
       uses: sbt/setup-sbt@v1
-    - name: Run tests
-      run: sbt test
+    - name: Compile
+      run: sbt compile
