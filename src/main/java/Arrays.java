@@ -1,5 +1,3 @@
-import java.lang.reflect.AnnotatedArrayType;
-
 class Arrays {
   /** 
    * This method will throw a runtime exception 
