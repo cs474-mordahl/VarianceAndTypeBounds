@@ -10,12 +10,12 @@
   */
 
 // format: off
-
+/*
 trait BrokenList[+T]:
   def prepend(elem: T): BrokenNonEmptyList[T] = BrokenNonEmptyList(elem, this)
 case class BrokenNonEmptyList[+T](head: T, tail: BrokenList[T]) extends BrokenList[T]
 case object BrokenNil extends BrokenList[Nothing]
-
+*/
 // format: on
 
 /** If you uncomment the previous code, you'll see that the compiler complains
