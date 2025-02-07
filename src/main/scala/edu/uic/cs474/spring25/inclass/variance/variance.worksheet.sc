@@ -9,7 +9,6 @@
   *
   * The code below might be our first attempt to implement a list in Scala.
   */
-import scala.compiletime.ops.int
 
 sealed trait InvariantList[T]
 case class NonEmptyInvariantList[T](head: T, tail: InvariantList[T])
