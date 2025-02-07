@@ -60,14 +60,15 @@ case class Dog(name: String) extends Animal
 case class Cat(name: String) extends Animal
 
 sealed trait MyList[+T]:
-  def prepend[U >: T](elem: U): MyNonEmptyList[U] = MyNonEmptyList(elem, this)
+  def prepend[U >: T](elem: U): MyNonEmptyList[U] =
+    MyNonEmptyList(elem, this)
 end MyList
 case class MyNonEmptyList[+T](head: T, tail: MyList[T]) extends MyList[T]
 case object Nil                                         extends MyList[Nothing]
 
 val cl1: MyList[Cat]    = MyNonEmptyList[Cat](Cat("Ace"), Nil)
 val al1: MyList[Animal] = cl1
-al1.prepend(Dog("Fido"))
+cl1.prepend(Dog("Fido"))
 
 /** In this case, T is called a "lower type bound", because it specifies the
   * lowest type that U can be.
